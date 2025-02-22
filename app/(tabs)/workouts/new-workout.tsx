@@ -1,11 +1,13 @@
 import { Text, View, StyleSheet, Button, ScrollView } from 'react-native'
-import Workout from '../Data/Entities/workout.interface'
+import Workout from '../../../Data/Entities/workout.interface'
 import * as SQLite from 'expo-sqlite'
 import { useState } from 'react';
+import { openDatabase } from '@/Data/database';
 
 
 export default function NewWorkoutScreen() {
   const [workoutInstance, setWorkoutInstance] = useState<Workout>({
+    Name: "New workout",
     PrepTime: 10,
     WorkTime: 20,
     RestTime: 10,
@@ -15,11 +17,20 @@ export default function NewWorkoutScreen() {
     CalmDownTime: 0,
   });
 
-  function updateValue(property: keyof Workout, opFlag: boolean) {
+  type NumericKeys<T> = {
+    [K in keyof T]: T[K] extends number ? K : never;
+  }[keyof T];
+  
+  function updateValue(property: NumericKeys<Workout>, opFlag: boolean) {
     setWorkoutInstance((prev) => ({
       ...prev,
       [property]: opFlag ? prev[property] + 1 : Math.max(0, prev[property] - 1),
     }));
+  }
+
+  function addWorkout(workoutInstance: Workout) {
+    let db = openDatabase();
+
   }
 
   return (
@@ -30,15 +41,15 @@ export default function NewWorkoutScreen() {
           <View key={key} style={styles.column}>
             <Text style={styles.label}>{key}</Text>
             <View style={styles.row}>
-              <View style={styles.buttonContainer}> <Button onPress={() => updateValue(key as keyof Workout, false)} title="-" /> </View>
+              <View style={styles.buttonContainer}> <Button onPress={() => updateValue(key as NumericKeys<Workout>, false)} title="-" /> </View>
               <Text>{workoutInstance[key as keyof Workout]}</Text>
-              <View style={styles.buttonContainer}> <Button onPress={() => updateValue(key as keyof Workout, true)} title="+" /> </View>
+              <View style={styles.buttonContainer}> <Button onPress={() => updateValue(key as NumericKeys<Workout>, true)} title="+" /> </View>
             </View>
           </View>
         ))}
 
         <View style={styles.buttonContainer}>
-          <Button title="Add"/>
+          <Button title="Add" onPress={() => (workoutInstance)/>
         </View>
       </View>
     </ScrollView>

@@ -1,4 +1,5 @@
 export default interface Workout {
+    Name: string,
     PrepTime: number;
     WorkTime: number;
     RestTime: number;
