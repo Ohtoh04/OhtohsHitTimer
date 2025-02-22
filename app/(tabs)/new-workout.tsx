@@ -36,6 +36,10 @@ export default function NewWorkoutScreen() {
             </View>
           </View>
         ))}
+
+        <View style={styles.buttonContainer}>
+          <Button title="Add"/>
+        </View>
       </View>
     </ScrollView>
   );
