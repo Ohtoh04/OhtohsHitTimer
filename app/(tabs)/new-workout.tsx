@@ -1,8 +1,8 @@
-import { Text, View, StyleSheet, Button, ScrollView } from 'react-native'
-import Workout from '../../../Data/Entities/workout.interface'
-import * as SQLite from 'expo-sqlite'
+import { Text, View, StyleSheet, Button, ScrollView, TextInput } from 'react-native'
+import Workout from '../../Data/Entities/workout.interface'
 import { useState } from 'react';
-import { openDatabase } from '@/Data/database';
+import { insertWorkout } from '@/Data/database';
+import { router } from 'expo-router';
 
 
 export default function NewWorkoutScreen() {
@@ -20,7 +20,7 @@ export default function NewWorkoutScreen() {
   type NumericKeys<T> = {
     [K in keyof T]: T[K] extends number ? K : never;
   }[keyof T];
-  
+
   function updateValue(property: NumericKeys<Workout>, opFlag: boolean) {
     setWorkoutInstance((prev) => ({
       ...prev,
@@ -28,9 +28,15 @@ export default function NewWorkoutScreen() {
     }));
   }
 
-  function addWorkout(workoutInstance: Workout) {
-    let db = openDatabase();
+  function updateTextValue(property: "Name", value: string) {
+    setWorkoutInstance((prev) => ({
+      ...prev,
+      [property]: value,
+    }));
+  }
 
+  async function addWorkout(workoutInstance: Workout) {
+    await insertWorkout(workoutInstance);
   }
 
   return (
@@ -40,21 +46,37 @@ export default function NewWorkoutScreen() {
         {Object.keys(workoutInstance).map((key) => (
           <View key={key} style={styles.column}>
             <Text style={styles.label}>{key}</Text>
-            <View style={styles.row}>
-              <View style={styles.buttonContainer}> <Button onPress={() => updateValue(key as NumericKeys<Workout>, false)} title="-" /> </View>
-              <Text>{workoutInstance[key as keyof Workout]}</Text>
-              <View style={styles.buttonContainer}> <Button onPress={() => updateValue(key as NumericKeys<Workout>, true)} title="+" /> </View>
-            </View>
+            {key === "Name" ? (
+              <TextInput
+                style={styles.input}
+                value={workoutInstance.Name}
+                onChangeText={(text) => updateTextValue("Name", text)}
+              />
+            ) : (
+              <View style={styles.row}>
+                <View style={styles.buttonContainer}>
+                  <Button onPress={() => updateValue(key as NumericKeys<Workout>, false)} title="-" />
+                </View>
+                <Text>{workoutInstance[key as keyof Workout]}</Text>
+                <View style={styles.buttonContainer}>
+                  <Button onPress={() => updateValue(key as NumericKeys<Workout>, true)} title="+" />
+                </View>
+              </View>
+            )}
           </View>
         ))}
 
         <View style={styles.buttonContainer}>
-          <Button title="Add" onPress={() => (workoutInstance)/>
+          <Button title="Add" onPress={async () => {
+            await addWorkout(workoutInstance);
+            router.back();
+          }} />
         </View>
       </View>
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -84,5 +106,10 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginHorizontal: 20,
     borderRadius: 10,
-  }
+  },
+  input: {
+    borderWidth: 1, 
+    borderColor: "gray", 
+    padding: 8, 
+    width: 200 },
 });
